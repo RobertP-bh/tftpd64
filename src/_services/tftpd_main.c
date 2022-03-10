@@ -551,10 +551,19 @@ HANDLE tObjects [E_TFTP_EV_NB];
 		{
 		   tThreads[TH_TFTP].skt = TftpBindLocalInterface ();
 		} // open the socket
-	   if (tThreads[TH_TFTP].skt == INVALID_SOCKET)
-	   {
-		   break;
-	   }
+	    if (tThreads[TH_TFTP].skt == INVALID_SOCKET)
+	    {
+			BOOL autoreconnect = TRUE; // todo: create GUI element and/or read from ini
+			if (autoreconnect)
+			{
+				Sleep(10000);
+				continue;
+			}
+			else
+			{
+				break;
+			}
+	    }
 
 	    // create event for the incoming Socket
 		hSocketEvent = WSACreateEvent();
