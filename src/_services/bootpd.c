@@ -640,6 +640,9 @@ return msgSize;
 ///////////
 // Process DHCP msg : return TRUE if an answer has been prepared
 
+char bootfile1[128] = "-";
+char bootfile2[128] = "-";
+
 int iCounterDHCP=0;
 int ProcessDHCPMessage (struct dhcp_packet *pDhcpPkt, int *pSize,  struct sockaddr_in* receivingAddress)
 {
@@ -648,7 +651,7 @@ struct LL_IP  *pCurIP=NULL, *pProposedIP=NULL;	// Thanks Sam Leitch !
 int            Ark, nDhcpType = 0;
 struct in_addr in_RequestedAddr;
 DWORD sStaticIP;
-unsigned short iLastArch;	// architecture required by client
+	unsigned short iLastArch = 0;	// architecture required by client
 
     if (IsDHCP (*pDhcpPkt))
     {
@@ -859,6 +862,40 @@ unsigned short iLastArch;	// architecture required by client
 
 
 DHCPScan();
+
+if (bootfile1[0] == '-')
+{
+	int first = 1;
+	int index = 0;
+	for (int i = 0; i < 128; i++)
+	{
+		if (pDhcpPkt->file[i] == ';')
+		{
+			first = 0;
+			index = 0;
+
+		}
+		else if (first)
+		{
+			bootfile1[index] = pDhcpPkt->file[i];
+			index++;
+		}
+		else
+		{
+			bootfile2[index] = pDhcpPkt->file[i];
+			index++;
+		}
+	}
+}
+
+	if (iLastArch == 0)
+	{
+		strcpy(pDhcpPkt->file, bootfile2);
+	}
+	else
+	{
+		strcpy(pDhcpPkt->file, bootfile1);
+	}
 
 // answer only to BootP, Request or discover msg
 return  (nDhcpType==0 || nDhcpType==DHCPDISCOVER || nDhcpType==DHCPREQUEST);
